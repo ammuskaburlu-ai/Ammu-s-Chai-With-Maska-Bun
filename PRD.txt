@@ -1,0 +1,544 @@
+# PRD — Single-Shop Food Ordering Platform
+
+## 1. Project Overview
+
+Build a modern, mobile-first food ordering platform for a single food business selling:
+
+* Snacks
+* Fast Food
+* Tiffins
+* Beverages
+* Special Items
+
+The platform should provide an experience similar to Swiggy/Zomato for a single vendor while remaining simple to manage.
+
+---
+
+# 2. Goals
+
+### Business Goals
+
+* Accept online orders directly
+* Accept online payments through Razorpay
+* Manage menu without developer support
+* Increase repeat customers
+* Reduce phone-order dependency
+* Track sales and customer activity
+
+### User Goals
+
+* Browse menu easily
+* Place orders quickly
+* Pay online securely
+* Track order progress
+* Reorder previous purchases
+
+---
+
+# 3. Tech Stack
+
+Frontend:
+
+* Next.js 15
+* TypeScript
+* Tailwind CSS
+* ShadCN UI
+
+Backend:
+
+* Supabase
+
+Database:
+
+* PostgreSQL
+
+Authentication:
+
+* Supabase Auth
+
+Hosting:
+
+* Vercel
+
+Payments:
+
+* Razorpay
+
+Storage:
+
+* Supabase Storage
+
+Notifications:
+
+* Email
+* Telegram Bot
+
+Analytics:
+
+* Google Analytics
+
+SEO:
+
+* Next.js SEO
+
+PWA:
+
+* Enabled
+
+---
+
+# 4. User Roles
+
+## Customer
+
+Can:
+
+* Browse menu
+* Register/login
+* Place orders
+* Pay online
+* Track orders
+* Manage profile
+* Save addresses
+* View order history
+* Submit reviews
+
+Cannot:
+
+* Access admin features
+
+---
+
+## Admin
+
+Can:
+
+* Access dashboard
+* Manage menu
+* Manage categories
+* Manage orders
+* Manage customers
+* Manage coupons
+* View reports
+* Configure business settings
+
+---
+
+# 5. Customer Features
+
+## Homepage
+
+Sections:
+
+* Hero Banner
+* Categories
+* Today's Special
+* Popular Items
+* Recommended Items
+* Offers
+* Reviews
+
+---
+
+## Menu
+
+Features:
+
+* Category filtering
+* Search
+* Sorting
+* Item details
+* Availability status
+
+---
+
+## Product Details
+
+Display:
+
+* Image
+* Description
+* Price
+* Availability
+* Ratings
+* Reviews
+
+Actions:
+
+* Add to Cart
+* Favorite Item
+
+---
+
+## Cart
+
+Features:
+
+* Update quantity
+* Remove item
+* Price breakdown
+* Coupon application
+
+---
+
+## Checkout
+
+Collect:
+
+* Name
+* Phone
+* Address
+* Notes
+
+Options:
+
+* Online Payment
+* Cash on Delivery
+
+---
+
+## Order Tracking
+
+Statuses:
+
+* Order Received
+* Payment Confirmed
+* Accepted
+* Preparing
+* Ready
+* Out For Delivery
+* Delivered
+* Cancelled
+
+---
+
+## User Account
+
+Features:
+
+* Profile
+* Saved addresses
+* Order history
+* Favorite items
+* Loyalty points
+
+---
+
+# 6. Admin Dashboard
+
+## Dashboard Metrics
+
+Display:
+
+* Total Revenue
+* Today's Revenue
+* Total Orders
+* Pending Orders
+* Completed Orders
+* Best Selling Items
+* Customer Count
+
+---
+
+## Menu Management
+
+Admin can:
+
+* Add Item
+* Edit Item
+* Delete Item
+* Upload Images
+* Set Availability
+* Mark Featured
+* Set Special Offers
+
+Fields:
+
+* Name
+* Description
+* Price
+* Category
+* Image
+* Stock Status
+
+---
+
+## Category Management
+
+Admin can:
+
+* Add category
+* Edit category
+* Delete category
+* Reorder categories
+
+---
+
+## Order Management
+
+Admin can:
+
+* View order details
+* Accept order
+* Reject order
+* Update status
+* Mark delivered
+* Refund order
+
+---
+
+## Customer Management
+
+Admin can:
+
+* View customers
+* View order history
+* Block abusive users
+
+---
+
+## Coupon Management
+
+Admin can:
+
+* Create coupon
+* Set expiry
+* Set discount %
+* Set minimum order value
+
+---
+
+# 7. Notifications
+
+## Customer Notifications
+
+Order Placed
+
+Payment Success
+
+Order Accepted
+
+Preparing
+
+Ready
+
+Out For Delivery
+
+Delivered
+
+Cancelled
+
+---
+
+## Admin Notifications
+
+New Order
+
+Payment Received
+
+Order Cancelled
+
+Refund Requested
+
+---
+
+# 8. Payment System
+
+Provider:
+
+* Razorpay
+
+Features:
+
+* UPI
+* Google Pay
+* PhonePe
+* Cards
+* Net Banking
+
+Security:
+
+* Webhook Verification
+* Signature Validation
+* Payment Status Verification
+
+---
+
+# 9. Loyalty System
+
+Users earn points.
+
+Example:
+
+₹100 spent = 10 points
+
+Redeem points during checkout.
+
+---
+
+# 10. Reviews System
+
+Customer can:
+
+* Rate 1–5 stars
+* Submit review
+* Upload food image
+
+Admin can:
+
+* Hide abusive reviews
+
+---
+
+# 11. PWA Features
+
+Users can:
+
+* Install website as app
+* Receive updates
+* Open from home screen
+
+No Play Store required.
+
+---
+
+# 12. Security Requirements
+
+Authentication:
+
+* JWT
+* Secure Cookies
+
+Authorization:
+
+* Role Based Access Control
+
+Database:
+
+* Supabase RLS
+
+Payment:
+
+* Razorpay Verification
+
+Security Headers:
+
+* CSP
+* XSS Protection
+* CSRF Protection
+
+Rate Limiting:
+
+* Login protection
+* API protection
+
+Password Storage:
+
+* Hashed and salted
+
+---
+
+# 13. SEO Requirements
+
+Pages:
+
+* Home
+* Category Pages
+* Item Pages
+* About
+* Contact
+
+Requirements:
+
+* Meta Tags
+* Sitemap
+* Robots.txt
+* Open Graph
+* Structured Data
+
+---
+
+# 14. Performance Targets
+
+Mobile Lighthouse:
+
+* 90+
+
+Desktop Lighthouse:
+
+* 95+
+
+Page Load:
+
+* Under 3 seconds
+
+Core Web Vitals:
+
+* Pass
+
+---
+
+# 15. Database Tables
+
+users
+
+addresses
+
+categories
+
+products
+
+product_images
+
+cart_items
+
+orders
+
+order_items
+
+payments
+
+coupons
+
+reviews
+
+favorites
+
+loyalty_points
+
+notifications
+
+settings
+
+admins
+
+---
+
+# 16. Future Upgrades
+
+Phase 2:
+
+* Delivery partner app
+* WhatsApp ordering
+* AI recommendations
+* Inventory management
+* GST invoices
+* Multi-language support
+
+Phase 3:
+
+* Multiple branches
+* Franchise support
+* Native Android App
+* Native iOS App
+* Customer referral engine
+
+---
+
+# Success Criteria
+
+* Customer can order within 60 seconds.
+* Admin can update menu within 30 seconds.
+* Payment success rate above 95%.
+* Mobile-first experience.
+* Zero dependency on developer for daily operations.

@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "regions": ["bom1"],
+  "headers": [
+    {
+      "source": "/api/razorpay/webhook",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ],
+  "crons": []
+}
