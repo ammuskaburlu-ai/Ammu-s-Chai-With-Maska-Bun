@@ -1,26 +1,117 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+
 interface TelegramMessage {
   chatId: string;
   text: string;
 }
 
-export async function sendTelegramMessage({ chatId, text }: TelegramMessage) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token || !chatId) {
-    console.warn("Telegram not configured, skipping notification");
+interface TelegramApiResponse {
+  ok?: boolean;
+  description?: string;
+  result?: { message_id?: number };
+}
+
+export interface TelegramSendResult {
+  success: boolean;
+  error?: string;
+  messageId?: number;
+}
+
+function logTelegramFailure(reason: string) {
+  console.error(`Telegram notification failed: ${reason}`);
+}
+
+function logTelegramSuccess() {
+  console.log("Telegram notification sent successfully.");
+}
+
+export async function sendTelegramMessage({
+  chatId,
+  text,
+}: TelegramMessage): Promise<TelegramSendResult> {
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token) {
+      logTelegramFailure("TELEGRAM_BOT_TOKEN not configured");
+      return { success: false, error: "TELEGRAM_BOT_TOKEN not configured" };
+    }
+    if (!chatId) {
+      logTelegramFailure("Telegram chat ID not provided");
+      return { success: false, error: "Telegram chat ID not provided" };
+    }
+
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+      }),
+    });
+
+    if (!response.ok) {
+      const reason = `HTTP ${response.status} ${response.statusText}`;
+      logTelegramFailure(reason);
+      return { success: false, error: reason };
+    }
+
+    let payload: TelegramApiResponse;
+    try {
+      payload = (await response.json()) as TelegramApiResponse;
+    } catch {
+      const reason = "Invalid JSON response from Telegram API";
+      logTelegramFailure(reason);
+      return { success: false, error: reason };
+    }
+
+    if (!payload.ok) {
+      const reason = payload.description || "Telegram API returned ok: false";
+      logTelegramFailure(reason);
+      return { success: false, error: reason };
+    }
+
+    logTelegramSuccess();
+    return { success: true, messageId: payload.result?.message_id };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "Unknown error";
+    logTelegramFailure(reason);
+    return { success: false, error: reason };
+  }
+}
+
+async function getTelegramChatIdFromSettings(): Promise<string | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "telegram_chat_id")
+      .maybeSingle();
+
+    if (data?.value == null) return null;
+
+    const raw = data.value;
+    if (typeof raw === "string") {
+      const chatId = raw.replace(/^"|"$/g, "").replace(/"/g, "").trim();
+      return chatId || null;
+    }
+
+    return String(raw).trim() || null;
+  } catch {
     return null;
   }
+}
 
-  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: "HTML",
-    }),
+const TEST_MESSAGE =
+  "🧪 <b>Test notification</b>\n\nAmmu's Chai With Maska Bun — Telegram is configured and working.";
+
+export async function testTelegramNotification(): Promise<TelegramSendResult> {
+  const chatId = await getTelegramChatIdFromSettings();
+  return sendTelegramMessage({
+    chatId: chatId ?? "",
+    text: TEST_MESSAGE,
   });
-
-  return response.json();
 }
 
 export function formatOrderTelegramMessage(
