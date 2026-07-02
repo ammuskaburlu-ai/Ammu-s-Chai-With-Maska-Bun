@@ -1,13 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { checkAdminAccess } from "@/lib/auth/admin-guard";
+import {
+  getSafeAdminRedirect,
+  isAdminApiRoute,
+  isAdminProtectedRoute,
+  isAdminPublicRoute,
+} from "@/lib/auth/admin-routes";
 
-function isAdminPage(pathname: string) {
-  return pathname === "/admin" || pathname.startsWith("/admin/");
-}
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
-function isAdminApi(pathname: string) {
-  return pathname.startsWith("/api/admin/") || pathname.startsWith("/api/test/");
+function applyNoStoreHeaders(response: NextResponse) {
+  Object.entries(NO_STORE_HEADERS).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
 }
 
 export async function updateSession(request: NextRequest) {
@@ -40,11 +51,24 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  if (isAdminPage(pathname) || isAdminApi(pathname)) {
+  if (isAdminPublicRoute(pathname)) {
+    if (user) {
+      const access = await checkAdminAccess(supabase, user);
+      if (access.ok) {
+        const url = request.nextUrl.clone();
+        url.pathname = getSafeAdminRedirect(url.searchParams.get("redirect"));
+        url.search = "";
+        return applyNoStoreHeaders(NextResponse.redirect(url));
+      }
+    }
+    return applyNoStoreHeaders(supabaseResponse);
+  }
+
+  if (isAdminProtectedRoute(pathname) || isAdminApiRoute(pathname)) {
     const access = await checkAdminAccess(supabase, user);
 
     if (!access.ok) {
-      if (isAdminApi(pathname)) {
+      if (isAdminApiRoute(pathname)) {
         const status = access.reason === "unauthenticated" ? 401 : 403;
         return NextResponse.json(
           { error: status === 401 ? "Unauthorized" : "Forbidden" },
@@ -52,18 +76,20 @@ export async function updateSession(request: NextRequest) {
         );
       }
 
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      url.search = "";
+
       if (access.reason === "unauthenticated") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
         url.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(url);
+      } else {
+        url.searchParams.set("error", "forbidden");
       }
 
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      url.searchParams.set("error", "admin_forbidden");
-      return NextResponse.redirect(url);
+      return applyNoStoreHeaders(NextResponse.redirect(url));
     }
+
+    return applyNoStoreHeaders(supabaseResponse);
   }
 
   if (

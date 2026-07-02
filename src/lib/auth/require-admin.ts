@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkAdminAccess } from "@/lib/auth/admin-guard";
+import { getSafeAdminRedirect } from "@/lib/auth/admin-routes";
 
-export async function requireAdmin() {
+export async function requireAdmin(redirectTo?: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -13,9 +14,12 @@ export async function requireAdmin() {
 
   if (!access.ok) {
     if (access.reason === "unauthenticated") {
-      redirect("/login?redirect=/admin");
+      const target = redirectTo
+        ? `/admin/login?redirect=${encodeURIComponent(getSafeAdminRedirect(redirectTo))}`
+        : "/admin/login";
+      redirect(target);
     }
-    redirect("/?error=admin_forbidden");
+    redirect("/admin/login?error=forbidden");
   }
 
   return { user: access.user, profile: access.profile, supabase };
