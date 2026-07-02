@@ -2,6 +2,10 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ProductGrid } from "@/components/products/product-grid";
 import { MenuFilters } from "./menu-filters";
+import {
+  buildProductSearchFilter,
+  isValidSearchTerm,
+} from "@/lib/menu-search";
 import type { Product, Category } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -29,18 +33,21 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
     .eq("is_active", true)
     .order("sort_order");
 
+  const categoryList = (categories as Category[]) || [];
+
   let query = supabase
     .from("products")
     .select("*, category:categories(*)")
     .eq("is_available", true);
 
   if (params.category) {
-    const cat = (categories as Category[] || []).find((c) => c.slug === params.category);
+    const cat = categoryList.find((c) => c.slug === params.category);
     if (cat) query = query.eq("category_id", cat.id);
   }
 
-  if (params.search) {
-    query = query.or(`name.ilike.%${params.search}%,description.ilike.%${params.search}%`);
+  if (isValidSearchTerm(params.search)) {
+    const searchFilter = buildProductSearchFilter(params.search, categoryList);
+    query = query.or(searchFilter);
   }
 
   if (params.filter === "special") {
@@ -59,26 +66,41 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
     query = query.order("sort_order");
   }
 
-  const { data: products } = await query;
+  const { data: products, error } = await query;
+
+  if (error) {
+    console.error("Menu search query error:", error.message);
+  }
+
+  const displaySearch = isValidSearchTerm(params.search) ? params.search : undefined;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">Our Menu</h1>
       <p className="text-muted-foreground mb-8">
-        Explore our delicious selection of food items
+        {displaySearch
+          ? `Results for "${displaySearch}"`
+          : "Explore our delicious selection of food items"}
       </p>
 
       <Suspense fallback={null}>
         <MenuFilters
-          categories={(categories as Category[]) || []}
+          categories={categoryList}
           currentCategory={params.category}
           currentSort={params.sort}
-          currentSearch={params.search}
+          currentSearch={displaySearch}
         />
       </Suspense>
 
       <div className="mt-8">
-        <ProductGrid products={(products as Product[]) || []} />
+        <ProductGrid
+          products={(products as Product[]) || []}
+          emptyMessage={
+            displaySearch
+              ? `No items found for "${displaySearch}"`
+              : "No items found"
+          }
+        />
       </div>
     </div>
   );

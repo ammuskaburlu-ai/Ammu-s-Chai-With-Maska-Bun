@@ -141,6 +141,7 @@ export interface Order {
   razorpay_payment_id: string | null;
   loyalty_points_earned: number;
   cancelled_reason: string | null;
+  idempotency_key: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];

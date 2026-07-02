@@ -56,7 +56,7 @@ export function Header({ user }: HeaderProps) {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
-            <Link href="/menu?search=true">
+            <Link href="/menu">
               <Search className="h-5 w-5" />
             </Link>
           </Button>

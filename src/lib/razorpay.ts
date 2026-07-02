@@ -20,7 +20,15 @@ export function verifyPaymentSignature(
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
     .update(body)
     .digest("hex");
-  return expectedSignature === signature;
+
+  try {
+    const expected = Buffer.from(expectedSignature, "hex");
+    const actual = Buffer.from(signature, "hex");
+    if (expected.length !== actual.length) return false;
+    return crypto.timingSafeEqual(expected, actual);
+  } catch {
+    return false;
+  }
 }
 
 export function verifyWebhookSignature(body: string, signature: string): boolean {
@@ -28,5 +36,13 @@ export function verifyWebhookSignature(body: string, signature: string): boolean
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
     .update(body)
     .digest("hex");
-  return expectedSignature === signature;
+
+  try {
+    const expected = Buffer.from(expectedSignature, "hex");
+    const actual = Buffer.from(signature, "hex");
+    if (expected.length !== actual.length) return false;
+    return crypto.timingSafeEqual(expected, actual);
+  } catch {
+    return false;
+  }
 }

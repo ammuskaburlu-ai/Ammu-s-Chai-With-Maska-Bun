@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/razorpay";
-import { notifyPaymentReceived, notifyOrderStatusChange } from "@/lib/notifications";
+import { confirmOrderPaymentByRazorpayOrderId } from "@/lib/orders/confirm-payment";
 
 export async function POST(request: Request) {
   try {
@@ -17,52 +17,12 @@ export async function POST(request: Request) {
 
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity;
-      const razorpayOrderId = payment.order_id;
-
-      const { data: order } = await admin
-        .from("orders")
-        .select("*")
-        .eq("razorpay_order_id", razorpayOrderId)
-        .single();
-
-      if (order && order.payment_status !== "paid") {
-        await admin
-          .from("orders")
-          .update({
-            payment_status: "paid",
-            status: "payment_confirmed",
-            razorpay_payment_id: payment.id,
-          })
-          .eq("id", order.id);
-
-        await admin
-          .from("payments")
-          .update({
-            razorpay_payment_id: payment.id,
-            status: "paid",
-            method: payment.method,
-            raw_response: payment,
-          })
-          .eq("order_id", order.id);
-
-        if (order.user_id && order.loyalty_points_earned > 0) {
-          const { data: profile } = await admin
-            .from("profiles")
-            .select("loyalty_points")
-            .eq("id", order.user_id)
-            .single();
-
-          if (profile) {
-            await admin
-              .from("profiles")
-              .update({ loyalty_points: profile.loyalty_points + order.loyalty_points_earned })
-              .eq("id", order.user_id);
-          }
-        }
-
-        await notifyPaymentReceived(order);
-        await notifyOrderStatusChange(order, "payment_confirmed");
-      }
+      await confirmOrderPaymentByRazorpayOrderId(
+        payment.order_id,
+        payment.id,
+        payment.method,
+        payment
+      );
     }
 
     if (event.event === "payment.failed") {
@@ -77,12 +37,14 @@ export async function POST(request: Request) {
         await admin
           .from("orders")
           .update({ payment_status: "failed" })
-          .eq("id", order.id);
+          .eq("id", order.id)
+          .eq("payment_status", "pending");
 
         await admin
           .from("payments")
           .update({ status: "failed", raw_response: payment })
-          .eq("order_id", order.id);
+          .eq("order_id", order.id)
+          .eq("status", "pending");
       }
     }
 

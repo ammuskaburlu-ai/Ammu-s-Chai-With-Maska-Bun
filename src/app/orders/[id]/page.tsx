@@ -24,6 +24,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
     .from("orders")
     .select("*, order_items(*)")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   if (!order) notFound();

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { calculateDiscount } from "@/lib/utils";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const schema = z.object({
@@ -9,6 +10,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const rateLimited = enforceRateLimit(request, "coupons-validate", 30, 60_000);
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const { code, subtotal } = schema.parse(body);

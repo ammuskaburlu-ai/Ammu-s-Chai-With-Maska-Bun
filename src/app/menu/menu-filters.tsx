@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,10 @@ export function MenuFilters({
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(currentSearch || "");
 
+  useEffect(() => {
+    setSearch(currentSearch || "");
+  }, [currentSearch]);
+
   const updateParams = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -44,7 +48,13 @@ export function MenuFilters({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateParams("search", search || null);
+    const trimmed = search.trim();
+    updateParams("search", trimmed || null);
+  };
+
+  const clearSearch = () => {
+    setSearch("");
+    updateParams("search", null);
   };
 
   return (
@@ -60,6 +70,11 @@ export function MenuFilters({
           />
         </div>
         <Button type="submit" variant="brand">Search</Button>
+        {currentSearch && (
+          <Button type="button" variant="outline" onClick={clearSearch}>
+            Clear
+          </Button>
+        )}
       </form>
 
       <div className="flex flex-wrap gap-2">

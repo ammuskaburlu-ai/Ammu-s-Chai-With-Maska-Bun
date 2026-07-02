@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPaymentSignature } from "@/lib/razorpay";
-import { notifyPaymentReceived, notifyOrderStatusChange } from "@/lib/notifications";
+import { confirmOrderPayment } from "@/lib/orders/confirm-payment";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const verifySchema = z.object({
@@ -12,9 +14,42 @@ const verifySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const rateLimited = enforceRateLimit(request, "razorpay-verify", 20, 60_000);
+  if (rateLimited) return rateLimited;
+
   try {
     const body = await request.json();
     const data = verifySchema.parse(body);
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const admin = createAdminClient();
+    const { data: order, error: orderError } = await admin
+      .from("orders")
+      .select("*")
+      .eq("id", data.orderId)
+      .single();
+
+    if (orderError || !order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    if (order.user_id) {
+      if (!user || user.id !== order.user_id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
+    }
+
+    if (order.razorpay_order_id !== data.razorpay_order_id) {
+      return NextResponse.json({ error: "Payment order mismatch" }, { status: 400 });
+    }
+
+    if (order.payment_method !== "razorpay") {
+      return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
+    }
 
     const isValid = verifyPaymentSignature(
       data.razorpay_order_id,
@@ -26,58 +61,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
     }
 
-    const admin = createAdminClient();
+    const result = await confirmOrderPayment({
+      orderId: data.orderId,
+      razorpayPaymentId: data.razorpay_payment_id,
+      razorpaySignature: data.razorpay_signature,
+    });
 
-    const { data: order, error } = await admin
-      .from("orders")
-      .update({
-        payment_status: "paid",
-        status: "payment_confirmed",
-        razorpay_payment_id: data.razorpay_payment_id,
-      })
-      .eq("id", data.orderId)
-      .select()
-      .single();
-
-    if (error || !order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-
-    await admin
-      .from("payments")
-      .update({
-        razorpay_payment_id: data.razorpay_payment_id,
-        razorpay_signature: data.razorpay_signature,
-        status: "paid",
-      })
-      .eq("order_id", data.orderId);
-
-    if (order.user_id && order.loyalty_points_earned > 0) {
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("loyalty_points")
-        .eq("id", order.user_id)
-        .single();
-
-      if (profile) {
-        await admin
-          .from("profiles")
-          .update({ loyalty_points: profile.loyalty_points + order.loyalty_points_earned })
-          .eq("id", order.user_id);
-
-        await admin.from("loyalty_points").insert({
-          user_id: order.user_id,
-          order_id: order.id,
-          points: order.loyalty_points_earned,
-          description: `Earned from order #${order.order_number}`,
-        });
-      }
-    }
-
-    await notifyPaymentReceived(order);
-    await notifyOrderStatusChange(order, "payment_confirmed");
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      alreadyPaid: result.alreadyPaid,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
