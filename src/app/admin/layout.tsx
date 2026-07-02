@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   LayoutDashboard,
   UtensilsCrossed,
@@ -9,8 +8,10 @@ import {
   Ticket,
   Settings,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { cn } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -27,18 +28,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login?redirect=/admin");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.role !== "admin") redirect("/");
+  const { profile } = await requireAdmin();
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">

@@ -1,5 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { checkAdminAccess } from "@/lib/auth/admin-guard";
+
+function isAdminPage(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
+function isAdminApi(pathname: string) {
+  return pathname.startsWith("/api/admin/") || pathname.startsWith("/api/test/");
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -31,23 +40,28 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(url);
-    }
+  if (isAdminPage(pathname) || isAdminApi(pathname)) {
+    const access = await checkAdminAccess(supabase, user);
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, is_blocked")
-      .eq("id", user.id)
-      .single();
+    if (!access.ok) {
+      if (isAdminApi(pathname)) {
+        const status = access.reason === "unauthenticated" ? 401 : 403;
+        return NextResponse.json(
+          { error: status === 401 ? "Unauthorized" : "Forbidden" },
+          { status }
+        );
+      }
 
-    if (!profile || profile.role !== "admin" || profile.is_blocked) {
+      if (access.reason === "unauthenticated") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        url.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(url);
+      }
+
       const url = request.nextUrl.clone();
       url.pathname = "/";
+      url.searchParams.set("error", "admin_forbidden");
       return NextResponse.redirect(url);
     }
   }
