@@ -28,6 +28,7 @@ function buildContentSecurityPolicy(): string {
       "https://*.supabase.co", // Supabase REST/auth/storage
       "https://api.razorpay.com", // order + payment API
       "https://checkout.razorpay.com", // checkout modal telemetry
+      "https://cdn.razorpay.com",
       "https://lumberjack.razorpay.com", // Razorpay client logging
       "https://www.google-analytics.com",
       "https://region1.google-analytics.com", // GA4 event collection
