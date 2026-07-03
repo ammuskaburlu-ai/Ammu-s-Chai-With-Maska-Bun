@@ -17,12 +17,23 @@ export interface TelegramSendResult {
   messageId?: number;
 }
 
-function logTelegramFailure(reason: string) {
-  console.error(`Telegram notification failed: ${reason}`);
+function logTelegramFailure(
+  reason: string,
+  details?: { statusCode?: number; body?: string; error?: unknown }
+) {
+  console.error("Telegram notification failed:", reason, {
+    timestamp: new Date().toISOString(),
+    statusCode: details?.statusCode,
+    responseBody: details?.body,
+    message: reason,
+    stack: details?.error instanceof Error ? details.error.stack : undefined,
+  });
 }
 
 function logTelegramSuccess() {
-  console.log("Telegram notification sent successfully.");
+  console.log("Telegram notification sent successfully.", {
+    timestamp: new Date().toISOString(),
+  });
 }
 
 export async function sendTelegramMessage({
@@ -51,8 +62,9 @@ export async function sendTelegramMessage({
     });
 
     if (!response.ok) {
+      const body = await response.text().catch(() => undefined);
       const reason = `HTTP ${response.status} ${response.statusText}`;
-      logTelegramFailure(reason);
+      logTelegramFailure(reason, { statusCode: response.status, body });
       return { success: false, error: reason };
     }
 
@@ -75,7 +87,7 @@ export async function sendTelegramMessage({
     return { success: true, messageId: payload.result?.message_id };
   } catch (error) {
     const reason = error instanceof Error ? error.message : "Unknown error";
-    logTelegramFailure(reason);
+    logTelegramFailure(reason, { error });
     return { success: false, error: reason };
   }
 }
