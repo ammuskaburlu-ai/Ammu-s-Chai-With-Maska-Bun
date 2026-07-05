@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 import type { Product } from "@/types/database";
+import type { ProductHighlightBadge } from "@/types/marketing";
+import { getProductBadgeLabel } from "@/lib/marketing/product-badges";
 import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product;
+  highlightBadge?: ProductHighlightBadge;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, highlightBadge }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAdd = (e: React.MouseEvent) => {
@@ -45,6 +48,11 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
           {product.is_special && (
             <Badge variant="brand" className="absolute top-2 left-2">Special</Badge>
+          )}
+          {highlightBadge && (
+            <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+              {getProductBadgeLabel(highlightBadge)}
+            </Badge>
           )}
           {!product.is_available && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">

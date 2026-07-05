@@ -33,6 +33,13 @@ export const metadata: Metadata = {
     title: APP_NAME,
     description: APP_DESCRIPTION,
   },
+  alternates: {
+    canonical: APP_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -78,6 +85,12 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} font-sans min-h-screen flex flex-col`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:shadow-md focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
@@ -91,11 +104,15 @@ export default async function RootLayout({
         )}
         <Providers>
           <Header user={profile} />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1">{children}</main>
           <Footer
             businessName={settings.businessName}
             businessPhone={settings.businessPhone}
             businessEmail={settings.businessEmail}
+            businessAddress={settings.businessAddress}
+            openingHours={settings.openingHours}
+            whatsapp={settings.contact?.whatsapp}
+            mapsUrl={settings.contact?.maps_url}
           />
         </Providers>
       </body>

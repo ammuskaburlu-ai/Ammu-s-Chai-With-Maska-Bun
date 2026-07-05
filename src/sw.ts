@@ -11,21 +11,6 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-/** Third-party payment, auth, and analytics — never cache; always hit network. */
-function isNetworkOnlyOrigin(hostname: string): boolean {
-  return (
-    hostname === "checkout.razorpay.com" ||
-    hostname === "cdn.razorpay.com" ||
-    hostname === "api.razorpay.com" ||
-    hostname === "lumberjack.razorpay.com" ||
-    hostname === "api.sardine.ai" ||
-    hostname === "www.google-analytics.com" ||
-    hostname === "region1.google-analytics.com" ||
-    hostname === "www.googletagmanager.com" ||
-    hostname.endsWith(".supabase.co")
-  );
-}
-
 /** Never cache authenticated or admin routes in the service worker. */
 function isAuthSensitivePath(pathname: string): boolean {
   return (
@@ -42,6 +27,23 @@ function isAuthSensitivePath(pathname: string): boolean {
   );
 }
 
+/** Third-party payment, auth, and analytics origins — never cache in SW. */
+const NETWORK_ONLY_HOSTS = new Set([
+  "checkout.razorpay.com",
+  "cdn.razorpay.com",
+  "api.razorpay.com",
+  "lumberjack.razorpay.com",
+  "api.sardine.ai",
+  "www.google-analytics.com",
+  "region1.google-analytics.com",
+  "www.googletagmanager.com",
+]);
+
+function isNetworkOnlyOrigin(hostname: string): boolean {
+  if (NETWORK_ONLY_HOSTS.has(hostname)) return true;
+  return hostname.endsWith(".supabase.co");
+}
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -49,12 +51,12 @@ const serwist = new Serwist({
   navigationPreload: true,
   runtimeCaching: [
     {
-      matcher: ({ url }) => isNetworkOnlyOrigin(url.hostname),
+      matcher: ({ request, url }) =>
+        request.mode === "navigate" && isAuthSensitivePath(url.pathname),
       handler: new NetworkOnly(),
     },
     {
-      matcher: ({ request, url }) =>
-        request.mode === "navigate" && isAuthSensitivePath(url.pathname),
+      matcher: ({ url }) => isNetworkOnlyOrigin(url.hostname),
       handler: new NetworkOnly(),
     },
     ...defaultCache,

@@ -13,6 +13,7 @@ import { APP_NAME } from "@/lib/constants";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/menu", label: "Menu" },
+  { href: "/community", label: "Community" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -56,21 +57,21 @@ export function Header({ user }: HeaderProps) {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
-            <Link href="/menu">
+            <Link href="/menu" aria-label="Search menu">
               <Search className="h-5 w-5" />
             </Link>
           </Button>
 
           {user && (
             <Button variant="ghost" size="icon" asChild>
-              <Link href="/account/favorites">
+              <Link href="/account/favorites" aria-label="Favorites">
                 <Heart className="h-5 w-5" />
               </Link>
             </Button>
           )}
 
           <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/cart">
+            <Link href="/cart" aria-label={`Cart${showCartCount ? `, ${itemCount} items` : ""}`}>
               <ShoppingCart className="h-5 w-5" />
               {showCartCount && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
@@ -81,14 +82,14 @@ export function Header({ user }: HeaderProps) {
           </Button>
 
           <Button variant="ghost" size="icon" asChild>
-            <Link href={user ? "/account" : "/login"}>
+            <Link href={user ? "/account" : "/login"} aria-label={user ? "My account" : "Sign in"}>
               <User className="h-5 w-5" />
             </Link>
           </Button>
 
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
