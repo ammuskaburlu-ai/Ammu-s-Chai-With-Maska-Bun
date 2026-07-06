@@ -7,6 +7,7 @@ import {
   Users,
   Ticket,
   Settings,
+  Megaphone,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
   { href: "/admin/customers", icon: Users, label: "Customers" },
   { href: "/admin/coupons", icon: Ticket, label: "Coupons" },
+  { href: "/admin/marketing", icon: Megaphone, label: "Marketing CMS" },
   { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 

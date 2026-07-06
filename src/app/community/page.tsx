@@ -7,25 +7,33 @@ import { VideoTestimonialsSection } from "@/components/marketing/video-testimoni
 import { InstagramCta } from "@/components/marketing/instagram-cta";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { APP_URL } from "@/lib/constants";
-import {
-  INSTAGRAM_URL,
-  PLACEHOLDER_EVENTS,
-  PLACEHOLDER_STORIES,
-} from "@/lib/marketing/placeholder-data";
+import { getMarketingContent } from "@/lib/marketing/queries";
+import { PLACEHOLDER_EVENTS } from "@/lib/marketing/placeholder-data";
 
-export const metadata: Metadata = {
-  title: "Community",
-  description:
-    "Featured creators, customer stories, and events from Ammu's Chai With Maska Bun in Nellore.",
-  alternates: { canonical: `${APP_URL}/community` },
-  openGraph: {
-    title: "Community | Ammu's Chai With Maska Bun",
-    description: "Featured creators, customer stories, and events from Nellore's favourite chai spot.",
-    url: `${APP_URL}/community`,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const marketing = await getMarketingContent();
+  const seo = marketing.seoPages.find((p) => p.page_key === "community");
 
-export default function CommunityPage() {
+  return {
+    title: seo?.meta_title || "Community",
+    description:
+      seo?.meta_description ||
+      "Featured creators, customer stories, and events from Ammu's Chai With Maska Bun in Nellore.",
+    alternates: { canonical: seo?.canonical_path || `${APP_URL}/community` },
+    openGraph: {
+      title: seo?.meta_title || "Community | Ammu's Chai With Maska Bun",
+      description:
+        seo?.meta_description ||
+        "Featured creators, customer stories, and events from Nellore's favourite chai spot.",
+      url: `${APP_URL}/community`,
+      images: seo?.og_image_url ? [seo.og_image_url] : undefined,
+    },
+  };
+}
+
+export default async function CommunityPage() {
+  const marketing = await getMarketingContent();
+
   return (
     <div>
       <section className="py-12 md:py-16 bg-gradient-to-br from-brand/10 via-background to-brand/5">
@@ -37,9 +45,9 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <FeaturedBySection />
+      <FeaturedBySection influencers={marketing.influencers} />
 
-      <CustomerGallery />
+      <CustomerGallery items={marketing.galleryItems} />
 
       <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -48,17 +56,17 @@ export default function CommunityPage() {
             subtitle="Highlights from our daily chai moments"
             action={
               <Button variant="outline" size="sm" asChild>
-                <Link href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+                <Link href={marketing.instagramUrl} target="_blank" rel="noopener noreferrer">
                   View on Instagram
                 </Link>
               </Button>
             }
           />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {PLACEHOLDER_STORIES.map((story) => (
+            {marketing.stories.map((story) => (
               <Link
                 key={story.id}
-                href={story.url || INSTAGRAM_URL}
+                href={story.url || marketing.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-xl border bg-card aspect-[9/16] flex items-end p-4 bg-gradient-to-t from-black/60 to-brand/20 hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -71,7 +79,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <VideoTestimonialsSection />
+      <VideoTestimonialsSection videos={marketing.videoTestimonials} />
 
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
@@ -91,7 +99,10 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <InstagramCta />
+      <InstagramCta
+        instagramHandle={marketing.instagramHandle}
+        instagramUrl={marketing.instagramUrl}
+      />
     </div>
   );
 }

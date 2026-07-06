@@ -6,9 +6,45 @@ import type {
   Influencer,
   VideoTestimonial,
 } from "@/types/marketing";
+import type {
+  MarketingAnnouncement,
+  MarketingFaq,
+  MarketingHeroTrustItem,
+  MarketingTrustBadge,
+  MarketingWhyFeature,
+} from "@/types/marketing-db";
 
 export const INSTAGRAM_HANDLE = "ammuschai";
 export const INSTAGRAM_URL = "https://instagram.com/ammuschai";
+
+export const PLACEHOLDER_TRUST_BADGES: MarketingTrustBadge[] = [
+  { id: "tb1", title: "Freshly Brewed Daily", description: "Chai & snacks made fresh for every order", icon_name: "coffee", sort_order: 1, is_active: true },
+  { id: "tb2", title: "Secure Payments", description: "Safe checkout with trusted payment partners", icon_name: "shield-check", sort_order: 2, is_active: true },
+  { id: "tb3", title: "Fast Delivery", description: "Quick local delivery across Nellore", icon_name: "truck", sort_order: 3, is_active: true },
+  { id: "tb4", title: "Loved Across Nellore", description: "A local favourite for chai & maska bun", icon_name: "heart", sort_order: 4, is_active: true },
+];
+
+export const PLACEHOLDER_HERO_TRUST_ITEMS: MarketingHeroTrustItem[] = [
+  { id: "ht1", label: "★★★★★ Loved in Nellore", icon_name: "star", sort_order: 1, is_active: true },
+  { id: "ht2", label: "Secure Payments", icon_name: "shield-check", sort_order: 2, is_active: true },
+  { id: "ht3", label: "Fast Local Delivery", icon_name: "truck", sort_order: 3, is_active: true },
+  { id: "ht4", label: "Featured by Nellore Food Creators", icon_name: "users", sort_order: 4, is_active: true },
+];
+
+export const PLACEHOLDER_WHY_FEATURES: MarketingWhyFeature[] = [
+  { id: "wf1", title: "Fresh Ingredients", description: "Chai and snacks prepared fresh for every order", icon_name: "leaf", sort_order: 1, is_active: true },
+  { id: "wf2", title: "Affordable", description: "Great value combos without compromising on taste", icon_name: "indian-rupee", sort_order: 2, is_active: true },
+  { id: "wf3", title: "Authentic Taste", description: "Classic maska bun and chai the Nellore way", icon_name: "clock", sort_order: 3, is_active: true },
+  { id: "wf4", title: "Quick Delivery", description: "Fast local delivery when you crave comfort food", icon_name: "truck", sort_order: 4, is_active: true },
+  { id: "wf5", title: "Secure Checkout", description: "Safe online payments with trusted partners", icon_name: "shield-check", sort_order: 5, is_active: true },
+];
+
+export const PLACEHOLDER_ANNOUNCEMENTS: MarketingAnnouncement[] = [];
+
+export const PLACEHOLDER_FAQS: MarketingFaq[] = [
+  { id: "faq1", question: "Do you deliver across Nellore?", answer: "Yes — we deliver across Nellore with fast local delivery.", sort_order: 1, is_active: true },
+  { id: "faq2", question: "What are your payment options?", answer: "We accept secure online payments via trusted partners at checkout.", sort_order: 2, is_active: true },
+];
 
 export const PLACEHOLDER_INFLUENCERS: Influencer[] = [
   {

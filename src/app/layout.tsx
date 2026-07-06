@@ -4,8 +4,10 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { AnnouncementBar } from "@/components/marketing/announcement-bar";
 import { createClient } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/settings";
+import { getMarketingContent } from "@/lib/marketing/queries";
 import { APP_NAME, APP_DESCRIPTION, APP_URL } from "@/lib/constants";
 import Script from "next/script";
 
@@ -81,6 +83,7 @@ export default async function RootLayout({
   }
 
   const settings = await getSettings();
+  const marketing = await getMarketingContent();
 
   return (
     <html lang="en">
@@ -103,6 +106,10 @@ export default async function RootLayout({
           </>
         )}
         <Providers>
+          <AnnouncementBar
+            announcements={marketing.announcements}
+            enabled={Boolean(marketing.theme.show_announcement_bar)}
+          />
           <Header user={profile} />
           <main id="main-content" className="flex-1">{children}</main>
           <Footer

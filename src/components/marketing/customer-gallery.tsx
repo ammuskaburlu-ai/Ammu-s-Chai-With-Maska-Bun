@@ -1,29 +1,49 @@
 import { Instagram } from "lucide-react";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { PLACEHOLDER_GALLERY } from "@/lib/marketing/placeholder-data";
+import type { GalleryItem } from "@/types/marketing";
 
-export function CustomerGallery() {
+interface CustomerGalleryProps {
+  items?: GalleryItem[];
+  title?: string;
+  subtitle?: string;
+}
+
+export function CustomerGallery({
+  items,
+  title = "Customer Gallery",
+  subtitle = "Real moments from our chai-loving community",
+}: CustomerGalleryProps) {
+  const galleryItems = items && items.length > 0 ? items : PLACEHOLDER_GALLERY;
+
   return (
     <section className="py-12 md:py-16 bg-muted/30">
       <div className="container mx-auto px-4">
-        <SectionHeader
-          title="Customer Gallery"
-          subtitle="Real moments from our chai-loving community"
-        />
+        <SectionHeader title={title} subtitle={subtitle} />
         <div className="columns-2 md:columns-3 gap-4 space-y-4">
-          {PLACEHOLDER_GALLERY.map((item, index) => (
+          {galleryItems.map((item, index) => (
             <article
               key={item.id}
               className="break-inside-avoid rounded-xl border bg-card overflow-hidden hover:shadow-md transition-shadow"
             >
-              <div
-                className={`bg-gradient-to-br from-brand/20 via-muted to-brand/5 flex items-center justify-center text-3xl ${
-                  index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-square" : "aspect-[3/4]"
-                }`}
-                aria-hidden
-              >
-                ☕
-              </div>
+              {item.imageUrl ? (
+                <img
+                  src={item.imageUrl}
+                  alt={item.caption || item.customerName || "Customer photo"}
+                  className={`w-full object-cover ${
+                    index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-square" : "aspect-[3/4]"
+                  }`}
+                />
+              ) : (
+                <div
+                  className={`bg-gradient-to-br from-brand/20 via-muted to-brand/5 flex items-center justify-center text-3xl ${
+                    index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-square" : "aspect-[3/4]"
+                  }`}
+                  aria-hidden
+                >
+                  ☕
+                </div>
+              )}
               <div className="p-3">
                 {item.customerName && (
                   <p className="font-medium text-sm">{item.customerName}</p>

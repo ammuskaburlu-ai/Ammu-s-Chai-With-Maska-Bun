@@ -17,16 +17,32 @@ import { LocalBusinessSchema } from "@/components/marketing/local-business-schem
 import { createClient } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/settings";
 import { buildProductBadgeMap } from "@/lib/marketing/product-badges";
+import {
+  getMarketingContent,
+  getSectionTitles,
+  isHomepageSectionEnabled,
+} from "@/lib/marketing/queries";
 import { APP_URL } from "@/lib/constants";
 import type { Product, Category, Review } from "@/types/database";
 
-export const metadata: Metadata = {
-  alternates: { canonical: APP_URL },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const marketing = await getMarketingContent();
+  const seo = marketing.seoPages.find((p) => p.page_key === "home");
+
+  return {
+    alternates: { canonical: seo?.canonical_path || APP_URL },
+    title: seo?.meta_title || undefined,
+    description: seo?.meta_description || undefined,
+    keywords: seo?.keywords?.split(",").map((k) => k.trim()) || undefined,
+    openGraph: seo?.og_image_url ? { images: [seo.og_image_url] } : undefined,
+  };
+}
 
 export default async function HomePage() {
   const supabase = await createClient();
   const settings = await getSettings();
+  const marketing = await getMarketingContent();
+  const sections = marketing.homepageSections;
 
   const [
     { data: categories },
@@ -55,58 +71,91 @@ export default async function HomePage() {
     image: "/images/hero.jpg",
   };
 
+  const featuredTitles = getSectionTitles(sections, "featured_by", {
+    title: "Featured By",
+    subtitle: "Nellore food creators who love our chai and maska bun",
+  });
+  const googleTitles = getSectionTitles(sections, "google_reviews", {
+    title: "Google Reviews",
+    subtitle: "What Nellore customers are saying on Google",
+  });
+  const galleryTitles = getSectionTitles(sections, "customer_gallery", {
+    title: "Customer Gallery",
+    subtitle: "Real moments from our chai-loving community",
+  });
+  const videoTitles = getSectionTitles(sections, "video_testimonials", {
+    title: "Video Testimonials",
+    subtitle: "Honest reviews from our customers — videos coming soon",
+  });
+  const whyTitles = getSectionTitles(sections, "why_people_love_us", {
+    title: "Why People Love Us",
+    subtitle: "Everything that makes Ammu's a local favourite",
+  });
+
   return (
     <>
       <LocalBusinessSchema settings={settings} />
       <div>
-        <section className="relative bg-gradient-to-br from-brand/10 via-background to-brand/5 py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl">
-              <Badge variant="brand" className="mb-4">Fast Delivery</Badge>
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
-                {hero.title}
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8">{hero.subtitle}</p>
-              <div className="flex flex-wrap gap-4">
-                <Button variant="brand" size="lg" asChild>
-                  <Link href="/menu">
-                    Order Now <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/menu">View Menu</Link>
-                </Button>
+        {isHomepageSectionEnabled(sections, "hero") && (
+          <section className="relative bg-gradient-to-br from-brand/10 via-background to-brand/5 py-16 md:py-24">
+            <div className="container mx-auto px-4">
+              <div className="max-w-2xl">
+                <Badge variant="brand" className="mb-4">Fast Delivery</Badge>
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
+                  {hero.title}
+                </h1>
+                <p className="text-lg text-muted-foreground mb-8">{hero.subtitle}</p>
+                <div className="flex flex-wrap gap-4">
+                  <Button variant="brand" size="lg" asChild>
+                    <Link href="/menu">
+                      Order Now <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild>
+                    <Link href="/menu">View Menu</Link>
+                  </Button>
+                </div>
+                <HeroTrustIndicators items={marketing.heroTrustItems} />
               </div>
-              <HeroTrustIndicators />
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <TrustBar />
+        {isHomepageSectionEnabled(sections, "trust_bar") && (
+          <TrustBar items={marketing.trustBadges} />
+        )}
 
-        <section className="py-12 md:py-16">
-          <div className="container mx-auto px-4">
-            <SectionHeader title="Categories" subtitle="Browse by what you're craving" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {(categories as Category[] || []).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/menu?category=${cat.slug}`}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card hover:border-brand hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <span className="text-3xl" aria-hidden>
-                    {cat.slug === "snacks" ? "🥟" : cat.slug === "fast-food" ? "🍔" : cat.slug === "tiffins" ? "🍛" : cat.slug === "beverages" ? "🥤" : "⭐"}
-                  </span>
-                  <span className="font-medium text-sm text-center">{cat.name}</span>
-                </Link>
-              ))}
+        {isHomepageSectionEnabled(sections, "categories") && (
+          <section className="py-12 md:py-16">
+            <div className="container mx-auto px-4">
+              <SectionHeader title="Categories" subtitle="Browse by what you're craving" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {(categories as Category[] || []).map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/menu?category=${cat.slug}`}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card hover:border-brand hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="text-3xl" aria-hidden>
+                      {cat.slug === "snacks" ? "🥟" : cat.slug === "fast-food" ? "🍔" : cat.slug === "tiffins" ? "🍛" : cat.slug === "beverages" ? "🥤" : "⭐"}
+                    </span>
+                    <span className="font-medium text-sm text-center">{cat.name}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <FeaturedBySection />
+        {isHomepageSectionEnabled(sections, "featured_by") && (
+          <FeaturedBySection
+            influencers={marketing.influencers}
+            title={featuredTitles.title}
+            subtitle={featuredTitles.subtitle}
+          />
+        )}
 
-        {specialProducts.length > 0 && (
+        {isHomepageSectionEnabled(sections, "todays_special") && specialProducts.length > 0 && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
               <SectionHeader
@@ -122,24 +171,33 @@ export default async function HomePage() {
           </section>
         )}
 
-        <section className="py-12 md:py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <SectionHeader
-              title="Best Sellers"
-              subtitle="Our most-loved chai, maska bun, and snack favourites"
-              action={
-                <Button variant="ghost" asChild>
-                  <Link href="/menu?sort=popular">View All</Link>
-                </Button>
-              }
-            />
-            <ProductGrid products={popularProducts} badgeMap={popularBadgeMap} />
-          </div>
-        </section>
+        {isHomepageSectionEnabled(sections, "best_sellers") && (
+          <section className="py-12 md:py-16 bg-muted/30">
+            <div className="container mx-auto px-4">
+              <SectionHeader
+                title="Best Sellers"
+                subtitle="Our most-loved chai, maska bun, and snack favourites"
+                action={
+                  <Button variant="ghost" asChild>
+                    <Link href="/menu?sort=popular">View All</Link>
+                  </Button>
+                }
+              />
+              <ProductGrid products={popularProducts} badgeMap={popularBadgeMap} />
+            </div>
+          </section>
+        )}
 
-        <GoogleReviewsSection />
+        {isHomepageSectionEnabled(sections, "google_reviews") && (
+          <GoogleReviewsSection
+            reviews={marketing.googleReviews}
+            googleReviewsUrl={marketing.googleReviewsUrl}
+            title={googleTitles.title}
+            subtitle={googleTitles.subtitle}
+          />
+        )}
 
-        {(featuredItems as Product[] || []).length > 0 && (
+        {isHomepageSectionEnabled(sections, "recommended") && (featuredItems as Product[] || []).length > 0 && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
               <SectionHeader title="Recommended For You" />
@@ -148,13 +206,31 @@ export default async function HomePage() {
           </section>
         )}
 
-        <CustomerGallery />
+        {isHomepageSectionEnabled(sections, "customer_gallery") && (
+          <CustomerGallery
+            items={marketing.galleryItems}
+            title={galleryTitles.title}
+            subtitle={galleryTitles.subtitle}
+          />
+        )}
 
-        <VideoTestimonialsSection />
+        {isHomepageSectionEnabled(sections, "video_testimonials") && (
+          <VideoTestimonialsSection
+            videos={marketing.videoTestimonials}
+            title={videoTitles.title}
+            subtitle={videoTitles.subtitle}
+          />
+        )}
 
-        <WhyPeopleLoveUs />
+        {isHomepageSectionEnabled(sections, "why_people_love_us") && (
+          <WhyPeopleLoveUs
+            features={marketing.whyFeatures}
+            title={whyTitles.title}
+            subtitle={whyTitles.subtitle}
+          />
+        )}
 
-        {(coupons || []).length > 0 && (
+        {isHomepageSectionEnabled(sections, "offers") && (coupons || []).length > 0 && (
           <section className="py-12 md:py-16 bg-muted/30">
             <div className="container mx-auto px-4">
               <SectionHeader title="Offers & Coupons" />
@@ -173,9 +249,14 @@ export default async function HomePage() {
           </section>
         )}
 
-        <InstagramCta />
+        {isHomepageSectionEnabled(sections, "instagram_cta") && (
+          <InstagramCta
+            instagramHandle={marketing.instagramHandle}
+            instagramUrl={marketing.instagramUrl}
+          />
+        )}
 
-        {(reviews as (Review & { profile?: { full_name: string | null } })[] || []).length > 0 && (
+        {isHomepageSectionEnabled(sections, "customer_reviews") && (reviews as (Review & { profile?: { full_name: string | null } })[] || []).length > 0 && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
               <SectionHeader title="What Our Customers Say" />
