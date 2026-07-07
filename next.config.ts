@@ -21,7 +21,7 @@ function buildContentSecurityPolicy(): string {
     "frame-ancestors 'none'",
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'", // Tailwind / component inline styles
-    "img-src 'self' data: blob: https://*.supabase.co https://www.google-analytics.com https://cdn.razorpay.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://res.cloudinary.com https://www.google-analytics.com https://cdn.razorpay.com",
     "font-src 'self' data:", // next/font self-hosts Geist under /_next/static
     [
       "connect-src 'self'",
@@ -54,6 +54,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
       },
     ],
   },
