@@ -32,12 +32,7 @@ export default async function AccountPage() {
             {profile?.full_name || profile?.email}
           </p>
         </div>
-        {profile && profile.loyalty_points > 0 && (
-          <div className="rounded-xl bg-brand/10 px-4 py-2 text-center">
-            <p className="text-2xl font-bold text-brand">{profile.loyalty_points}</p>
-            <p className="text-xs text-muted-foreground">Loyalty Points</p>
-          </div>
-        )}
+
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

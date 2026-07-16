@@ -115,14 +115,20 @@ async function getTelegramChatIdFromSettings(): Promise<string | null> {
   }
 }
 
-const TEST_MESSAGE =
-  "🧪 <b>Test notification</b>\n\nAmmu's Chai With Maska Bun — Telegram is configured and working.";
+async function getSettings(): Promise<Record<string, string>> {
+  const supabase = createAdminClient();
+  const { data } = await supabase.from("settings").select("key, value");
+  return Object.fromEntries((data || []).map((s) => [s.key, s.value]));
+}
 
 export async function testTelegramNotification(): Promise<TelegramSendResult> {
+  const settings = await getSettings();
+  const businessName = settings.businessName || "New App";
   const chatId = await getTelegramChatIdFromSettings();
+  
   return sendTelegramMessage({
     chatId: chatId ?? "",
-    text: TEST_MESSAGE,
+    text: `🧪 <b>Test notification</b>\n\n${businessName} — Telegram is configured and working.`,
   });
 }
 

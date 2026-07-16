@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Instagram } from "lucide-react";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { PLACEHOLDER_GALLERY } from "@/lib/marketing/placeholder-data";
@@ -27,13 +28,16 @@ export function CustomerGallery({
               className="break-inside-avoid rounded-xl border bg-card overflow-hidden hover:shadow-md transition-shadow"
             >
               {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt={item.caption || item.customerName || "Customer photo"}
-                  className={`w-full object-cover ${
-                    index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-square" : "aspect-[3/4]"
-                  }`}
-                />
+                <div className={`relative w-full overflow-hidden ${
+                  index % 3 === 0 ? "aspect-[4/5]" : index % 3 === 1 ? "aspect-square" : "aspect-[3/4]"
+                }`}>
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.caption || item.customerName || "Customer photo"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <div
                   className={`bg-gradient-to-br from-brand/20 via-muted to-brand/5 flex items-center justify-center text-3xl ${

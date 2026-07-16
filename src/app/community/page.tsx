@@ -10,18 +10,22 @@ import { APP_URL } from "@/lib/constants";
 import { getMarketingContent } from "@/lib/marketing/queries";
 import { PLACEHOLDER_EVENTS } from "@/lib/marketing/placeholder-data";
 
+import { getSettings } from "@/lib/settings";
+
 export async function generateMetadata(): Promise<Metadata> {
   const marketing = await getMarketingContent();
+  const settings = await getSettings();
+  const businessName = settings.businessName || "Ammu's Chai With Maska Bun";
   const seo = marketing.seoPages.find((p) => p.page_key === "community");
 
   return {
     title: seo?.meta_title || "Community",
     description:
       seo?.meta_description ||
-      "Featured creators, customer stories, and events from Ammu's Chai With Maska Bun in Nellore.",
+      `Featured creators, customer stories, and events from ${businessName} in Nellore.`,
     alternates: { canonical: seo?.canonical_path || `${APP_URL}/community` },
     openGraph: {
-      title: seo?.meta_title || "Community | Ammu's Chai With Maska Bun",
+      title: seo?.meta_title || `Community | ${businessName}`,
       description:
         seo?.meta_description ||
         "Featured creators, customer stories, and events from Nellore's favourite chai spot.",

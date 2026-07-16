@@ -6,6 +6,7 @@ interface LocalBusinessSchemaProps {
     businessPhone: string;
     businessEmail: string;
     businessAddress: string;
+    about?: string;
     contact?: { maps_url?: string; whatsapp?: string };
   };
 }
@@ -16,8 +17,7 @@ export function LocalBusinessSchema({ settings }: LocalBusinessSchemaProps) {
     "@type": "Restaurant",
     name: settings.businessName || APP_NAME,
     url: APP_URL,
-    description:
-      "Order authentic chai, maska bun, snacks and more online with fast local delivery in Nellore.",
+    description: settings.about || "Order your favorite food online.",
     ...(settings.businessAddress ? { address: settings.businessAddress } : {}),
     ...(settings.businessPhone ? { telephone: settings.businessPhone } : {}),
     ...(settings.businessEmail ? { email: settings.businessEmail } : {}),

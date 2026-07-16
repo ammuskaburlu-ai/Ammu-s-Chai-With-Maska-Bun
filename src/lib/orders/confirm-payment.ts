@@ -73,8 +73,6 @@ export async function confirmOrderPayment(
     .eq("order_id", orderId)
     .eq("status", "pending");
 
-  await creditLoyaltyForOrder(order as Order);
-
   if (sendNotifications) {
     await notifyPaymentReceived(order as Order);
     await notifyOrderStatusChange(order as Order, "payment_confirmed");
@@ -120,41 +118,4 @@ export async function confirmOrderPaymentByRazorpayOrderId(
   }
 
   return result;
-}
-
-async function creditLoyaltyForOrder(order: Order): Promise<void> {
-  if (!order.user_id || order.loyalty_points_earned <= 0) return;
-
-  const admin = createAdminClient();
-
-  const { data: existingCredit } = await admin
-    .from("loyalty_points")
-    .select("id")
-    .eq("order_id", order.id)
-    .gt("points", 0)
-    .maybeSingle();
-
-  if (existingCredit) return;
-
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("loyalty_points")
-    .eq("id", order.user_id)
-    .single();
-
-  if (!profile) return;
-
-  await admin
-    .from("profiles")
-    .update({
-      loyalty_points: profile.loyalty_points + order.loyalty_points_earned,
-    })
-    .eq("id", order.user_id);
-
-  await admin.from("loyalty_points").insert({
-    user_id: order.user_id,
-    order_id: order.id,
-    points: order.loyalty_points_earned,
-    description: `Earned from order #${order.order_number}`,
-  });
 }

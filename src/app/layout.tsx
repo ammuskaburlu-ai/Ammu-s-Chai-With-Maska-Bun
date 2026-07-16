@@ -13,50 +13,56 @@ import Script from "next/script";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(APP_URL),
-  title: {
-    default: `${APP_NAME} - Order Food Online`,
-    template: `%s | ${APP_NAME}`,
-  },
-  description: APP_DESCRIPTION,
-  keywords: ["food delivery", "online ordering", "snacks", "fast food", "tiffins"],
-  authors: [{ name: APP_NAME }],
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    url: APP_URL,
-    siteName: APP_NAME,
-    title: `${APP_NAME} - Order Food Online`,
-    description: APP_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: APP_NAME,
-    description: APP_DESCRIPTION,
-  },
-  alternates: {
-    canonical: APP_URL,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: APP_NAME,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const businessName = settings.businessName || APP_NAME;
+  const description = settings.about || APP_DESCRIPTION;
+
+  return {
+    metadataBase: new URL(APP_URL),
+    title: {
+      default: `${businessName} - Order Food Online`,
+      template: `%s | ${businessName}`,
+    },
+    description,
+    keywords: ["food delivery", "online ordering", "snacks", "fast food", "tiffins"],
+    authors: [{ name: businessName }],
+    openGraph: {
+      type: "website",
+      locale: "en_IN",
+      url: APP_URL,
+      siteName: businessName,
+      title: `${businessName} - Order Food Online`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: businessName,
+      description,
+    },
+    alternates: {
+      canonical: APP_URL,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    manifest: "/manifest.json",
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: businessName,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#FF6B35",
@@ -110,7 +116,11 @@ export default async function RootLayout({
             announcements={marketing.announcements}
             enabled={Boolean(marketing.theme.show_announcement_bar)}
           />
-          <Header user={profile} />
+          <Header 
+            user={profile} 
+            businessName={settings.businessName}
+            isStoreOpen={settings.isStoreOpen}
+          />
           <main id="main-content" className="flex-1">{children}</main>
           <Footer
             businessName={settings.businessName}
@@ -120,6 +130,9 @@ export default async function RootLayout({
             openingHours={settings.openingHours}
             whatsapp={settings.contact?.whatsapp}
             mapsUrl={settings.contact?.maps_url}
+            instagram={settings.contact?.instagram}
+            youtube={settings.contact?.youtube}
+            about={settings.about}
           />
         </Providers>
       </body>

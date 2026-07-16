@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Clock, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Clock, Instagram, MapPin, MessageCircle, Phone, Youtube } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
-import { INSTAGRAM_URL } from "@/lib/marketing/placeholder-data";
 
 interface FooterProps {
   businessName?: string;
@@ -11,6 +10,9 @@ interface FooterProps {
   openingHours?: Record<string, string>;
   whatsapp?: string;
   mapsUrl?: string;
+  instagram?: string;
+  youtube?: string;
+  about?: string;
 }
 
 const DEFAULT_HOURS: Record<string, string> = {
@@ -31,6 +33,9 @@ export function Footer({
   openingHours,
   whatsapp,
   mapsUrl,
+  instagram,
+  youtube,
+  about,
 }: FooterProps) {
   const hours = openingHours && Object.keys(openingHours).length > 0 ? openingHours : DEFAULT_HOURS;
   const whatsappLink = whatsapp
@@ -46,7 +51,7 @@ export function Footer({
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-lg font-bold text-brand mb-4">{businessName}</h3>
             <p className="text-sm text-muted-foreground">
-              Fresh chai, maska bun, and snacks delivered across Nellore.
+              {about || "Order food online with fast delivery."}
             </p>
           </div>
           <div>
@@ -110,17 +115,32 @@ export function Footer({
                   </a>
                 </li>
               )}
-              <li>
-                <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-brand"
-                >
-                  <Instagram className="h-4 w-4 shrink-0" />
-                  Instagram
-                </a>
-              </li>
+              {instagram && (
+                <li>
+                  <a
+                    href={instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 hover:text-brand"
+                  >
+                    <Instagram className="h-4 w-4 shrink-0" />
+                    Instagram
+                  </a>
+                </li>
+              )}
+              {youtube && (
+                <li>
+                  <a
+                    href={youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 hover:text-brand"
+                  >
+                    <Youtube className="h-4 w-4 shrink-0" />
+                    YouTube
+                  </a>
+                </li>
+              )}
               {whatsappLink && (
                 <li>
                   <a

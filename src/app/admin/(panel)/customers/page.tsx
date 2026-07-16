@@ -22,7 +22,6 @@ export default async function AdminCustomersPage() {
               <th className="text-left p-4">Name</th>
               <th className="text-left p-4 hidden md:table-cell">Email</th>
               <th className="text-left p-4 hidden sm:table-cell">Phone</th>
-              <th className="text-left p-4">Points</th>
               <th className="text-left p-4">Status</th>
               <th className="text-left p-4 hidden lg:table-cell">Joined</th>
               <th className="text-right p-4">Actions</th>
@@ -34,7 +33,6 @@ export default async function AdminCustomersPage() {
                 <td className="p-4 font-medium">{customer.full_name || "—"}</td>
                 <td className="p-4 hidden md:table-cell text-muted-foreground">{customer.email}</td>
                 <td className="p-4 hidden sm:table-cell">{customer.phone || "—"}</td>
-                <td className="p-4">{customer.loyalty_points}</td>
                 <td className="p-4">
                   <Badge variant={customer.is_blocked ? "destructive" : "success"}>
                     {customer.is_blocked ? "Blocked" : "Active"}

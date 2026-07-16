@@ -1,8 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   calculateDiscount,
-  calculateLoyaltyDiscount,
-  calculateLoyaltyEarned,
 } from "@/lib/utils";
 import { getSettings } from "@/lib/settings";
 import type { Coupon } from "@/types/database";
@@ -32,14 +30,12 @@ export interface OrderPricing {
   subtotal: number;
   discount_amount: number;
   delivery_fee: number;
-  loyalty_points_used: number;
-  loyalty_discount: number;
   total: number;
   coupon_id: string | null;
   coupon_code: string | null;
-  loyalty_points_earned: number;
   lineItems: ComputedLineItem[];
 }
+import { calculateOrderTotals } from "./pricing-math";
 
 async function validateCoupon(
   admin: ReturnType<typeof createAdminClient>,
@@ -78,7 +74,6 @@ export async function computeOrderPricing(
   items: OrderLineItemInput[],
   options: {
     couponCode?: string | null;
-    loyaltyPointsRequested?: number;
     userId?: string | null;
   }
 ): Promise<OrderPricing> {
@@ -147,55 +142,18 @@ export async function computeOrderPricing(
     coupon_code = coupon.code;
   }
 
-  let loyalty_points_used = 0;
-  let loyalty_discount = 0;
-
-  const pointsRequested = options.loyaltyPointsRequested ?? 0;
-  if (pointsRequested > 0) {
-    if (!options.userId) {
-      throw new OrderValidationError("Login required to use loyalty points");
-    }
-
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("loyalty_points, is_blocked")
-      .eq("id", options.userId)
-      .single();
-
-    if (!profile || profile.is_blocked) {
-      throw new OrderValidationError("Account is not eligible for loyalty points");
-    }
-
-    const maxDiscountable = Math.max(0, subtotal - discount_amount);
-    const maxPointsByTotal = Math.floor(maxDiscountable * 10);
-    loyalty_points_used = Math.min(
-      pointsRequested,
-      profile.loyalty_points,
-      maxPointsByTotal
-    );
-    loyalty_discount = calculateLoyaltyDiscount(loyalty_points_used);
-  }
-
-  const delivery_fee = settings.deliveryFee;
-  const total = Math.max(
-    0,
-    subtotal - discount_amount - loyalty_discount + delivery_fee
-  );
-  const loyalty_points_earned = calculateLoyaltyEarned(
-    total,
-    settings.loyaltyPointsRate
-  );
-
+  const { deliveryFee: delivery_fee, total } = calculateOrderTotals({
+    subtotal,
+    discountAmount: discount_amount,
+    settings,
+  });
   return {
     subtotal,
     discount_amount,
     delivery_fee,
-    loyalty_points_used,
-    loyalty_discount,
     total,
     coupon_id,
     coupon_code,
-    loyalty_points_earned,
     lineItems,
   };
 }

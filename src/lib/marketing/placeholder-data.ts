@@ -14,9 +14,6 @@ import type {
   MarketingWhyFeature,
 } from "@/types/marketing-db";
 
-export const INSTAGRAM_HANDLE = "ammuschai";
-export const INSTAGRAM_URL = "https://instagram.com/ammuschai";
-
 export const PLACEHOLDER_TRUST_BADGES: MarketingTrustBadge[] = [
   { id: "tb1", title: "Freshly Brewed Daily", description: "Chai & snacks made fresh for every order", icon_name: "coffee", sort_order: 1, is_active: true },
   { id: "tb2", title: "Secure Payments", description: "Safe checkout with trusted payment partners", icon_name: "shield-check", sort_order: 2, is_active: true },
@@ -53,7 +50,7 @@ export const PLACEHOLDER_INFLUENCERS: Influencer[] = [
     handle: "@nellorefoodie",
     followers: "48K",
     quote: "The maska bun here is unreal — must try in Nellore!",
-    reelUrl: INSTAGRAM_URL,
+    reelUrl: "",
   },
   {
     id: "2",
@@ -61,7 +58,7 @@ export const PLACEHOLDER_INFLUENCERS: Influencer[] = [
     handle: "@andhrabites",
     followers: "32K",
     quote: "Best evening chai spot. Cozy vibes and quick delivery.",
-    reelUrl: INSTAGRAM_URL,
+    reelUrl: "",
   },
   {
     id: "3",
@@ -69,7 +66,7 @@ export const PLACEHOLDER_INFLUENCERS: Influencer[] = [
     handle: "@streeteatsap",
     followers: "61K",
     quote: "Featured their combo — authentic taste every single time.",
-    reelUrl: INSTAGRAM_URL,
+    reelUrl: "",
   },
   {
     id: "4",
@@ -77,7 +74,7 @@ export const PLACEHOLDER_INFLUENCERS: Influencer[] = [
     handle: "@fcnellore",
     followers: "27K",
     quote: "Local favourite for chai lovers across Nellore.",
-    reelUrl: INSTAGRAM_URL,
+    reelUrl: "",
   },
 ];
 
@@ -133,10 +130,10 @@ export const PLACEHOLDER_VIDEO_TESTIMONIALS: VideoTestimonial[] = [
 ];
 
 export const PLACEHOLDER_STORIES: CommunityStory[] = [
-  { id: "s1", title: "Morning Chai Rush", url: INSTAGRAM_URL },
-  { id: "s2", title: "Maska Bun Fresh Batch", url: INSTAGRAM_URL },
-  { id: "s3", title: "Customer Shoutout", url: INSTAGRAM_URL },
-  { id: "s4", title: "Behind the Counter", url: INSTAGRAM_URL },
+  { id: "s1", title: "Morning Chai Rush", url: "" },
+  { id: "s2", title: "Maska Bun Fresh Batch", url: "" },
+  { id: "s3", title: "Customer Shoutout", url: "" },
+  { id: "s4", title: "Behind the Counter", url: "" },
 ];
 
 export const PLACEHOLDER_EVENTS: CommunityEvent[] = [

@@ -59,7 +59,9 @@ export async function notifyOrderPlaced(order: Order, items: OrderItem[]) {
       await sendEmail({
         to: profile.email,
         subject: `Order Placed - #${order.order_number}`,
+        businessName: settings.businessName as string,
         html: orderStatusEmailHtml(
+          settings.businessName as string,
           order.customer_name,
           order.order_number,
           "Order Received",
@@ -69,11 +71,13 @@ export async function notifyOrderPlaced(order: Order, items: OrderItem[]) {
     }
   }
 
-  if (adminEmail) {
+  if (typeof adminEmail === "string" && adminEmail) {
     await sendEmail({
       to: adminEmail.replace(/"/g, ""),
       subject: `New Order - #${order.order_number}`,
+      businessName: settings.businessName as string,
       html: newOrderAdminEmailHtml(
+        settings.businessName as string,
         order.order_number,
         order.customer_name,
         order.total,
@@ -82,7 +86,7 @@ export async function notifyOrderPlaced(order: Order, items: OrderItem[]) {
     });
   }
 
-  if (telegramChatId) {
+  if (typeof telegramChatId === "string" && telegramChatId) {
     await sendTelegramMessage({
       chatId: telegramChatId.replace(/"/g, ""),
       text: formatOrderTelegramMessage(
@@ -130,7 +134,9 @@ export async function notifyOrderStatusChange(order: Order, newStatus: string) {
       await sendEmail({
         to: profile.email,
         subject: `Order Update - #${order.order_number}`,
+        businessName: settings.businessName as string,
         html: orderStatusEmailHtml(
+          settings.businessName as string,
           order.customer_name,
           order.order_number,
           statusLabel,
@@ -140,7 +146,7 @@ export async function notifyOrderStatusChange(order: Order, newStatus: string) {
     }
   }
 
-  if (telegramChatId) {
+  if (typeof telegramChatId === "string" && telegramChatId) {
     await sendTelegramMessage({
       chatId: telegramChatId.replace(/"/g, ""),
       text: formatStatusTelegramMessage(order.order_number, statusLabel),
@@ -153,11 +159,13 @@ export async function notifyPaymentReceived(order: Order) {
   const adminEmail = settings.admin_email as string;
   const telegramChatId = settings.telegram_chat_id as string;
 
-  if (adminEmail) {
+  if (typeof adminEmail === "string" && adminEmail) {
     await sendEmail({
       to: adminEmail.replace(/"/g, ""),
       subject: `Payment Received - #${order.order_number}`,
+      businessName: settings.businessName as string,
       html: newOrderAdminEmailHtml(
+        settings.businessName as string,
         order.order_number,
         order.customer_name,
         order.total,
@@ -166,7 +174,7 @@ export async function notifyPaymentReceived(order: Order) {
     });
   }
 
-  if (telegramChatId) {
+  if (typeof telegramChatId === "string" && telegramChatId) {
     await sendTelegramMessage({
       chatId: telegramChatId.replace(/"/g, ""),
       text: `💳 Payment received for order <b>#${order.order_number}</b> — ₹${order.total.toFixed(2)}`,

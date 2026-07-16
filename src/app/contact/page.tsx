@@ -3,10 +3,14 @@ import { Phone, Mail, MapPin, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { APP_NAME } from "@/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Contact Us",
-  description: `Get in touch with ${APP_NAME} for orders, feedback, or inquiries.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const businessName = settings.businessName || APP_NAME;
+  return {
+    title: "Contact Us",
+    description: `Get in touch with ${businessName} for orders, feedback, or inquiries.`,
+  };
+}
 
 export default async function ContactPage() {
   const settings = await getSettings();

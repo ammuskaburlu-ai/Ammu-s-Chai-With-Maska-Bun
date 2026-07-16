@@ -1,7 +1,7 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { DEFAULT_DELIVERY_FEE, DEFAULT_MIN_ORDER, LOYALTY_POINTS_PER_100 } from "@/lib/constants";
 
-export async function getSettings() {
+export const getSettings = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase.from("settings").select("key, value");
 
@@ -23,17 +23,20 @@ export async function getSettings() {
     businessPhone: (settings.business_phone as string) || "",
     businessEmail: (settings.business_email as string) || "",
     businessAddress: (settings.business_address as string) || "",
-    deliveryFee: Number(settings.delivery_fee) || DEFAULT_DELIVERY_FEE,
-    minOrderValue: Number(settings.min_order_value) || DEFAULT_MIN_ORDER,
-    loyaltyPointsRate: Number(settings.loyalty_points_rate) || LOYALTY_POINTS_PER_100,
+    isStoreOpen: settings.is_store_open !== false, // Default to true if undefined
+    deliveryFee: Number(settings.delivery_fee) || 40,
+    freeDeliveryThreshold: Number(settings.free_delivery_threshold) || 0,
+    minOrderValue: Number(settings.min_order_value) || 99,
     heroBanner: settings.hero_banner as { title: string; subtitle: string; image: string } | undefined,
     openingHours: settings.opening_hours as Record<string, string> | undefined,
     about: (settings.about as string) || "",
-    contact: settings.contact as {
-      whatsapp: string;
-      maps_url?: string;
-      location_note?: string;
-      plus_code?: string;
-    } | undefined,
+    contact: {
+      whatsapp: (settings.contact as Record<string, string>)?.whatsapp || "",
+      maps_url: (settings.contact as Record<string, string>)?.maps_url || "",
+      location_note: (settings.contact as Record<string, string>)?.location_note || "",
+      plus_code: (settings.contact as Record<string, string>)?.plus_code || "",
+      instagram: (settings.contact as Record<string, string>)?.instagram || "",
+      youtube: (settings.contact as Record<string, string>)?.youtube || "",
+    },
   };
-}
+});

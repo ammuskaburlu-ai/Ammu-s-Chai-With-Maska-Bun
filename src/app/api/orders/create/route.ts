@@ -26,7 +26,6 @@ const orderSchema = z.object({
     )
     .min(1),
   coupon_code: z.string().nullable().optional(),
-  loyalty_points_used: z.number().int().min(0).optional(),
 });
 
 export async function POST(request: Request) {
@@ -61,6 +60,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = orderSchema.parse(body);
 
+    const { getSettings } = await import("@/lib/settings");
+    const settings = await getSettings();
+    if (!settings.isStoreOpen) {
+      return NextResponse.json({ error: "Store is currently closed" }, { status: 400 });
+    }
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -80,7 +85,6 @@ export async function POST(request: Request) {
 
     const pricing = await computeOrderPricing(data.items, {
       couponCode: data.coupon_code,
-      loyaltyPointsRequested: data.loyalty_points_used ?? 0,
       userId: user?.id ?? null,
     });
 
@@ -94,8 +98,6 @@ export async function POST(request: Request) {
         subtotal: pricing.subtotal,
         discount_amount: pricing.discount_amount,
         delivery_fee: pricing.delivery_fee,
-        loyalty_points_used: pricing.loyalty_points_used,
-        loyalty_discount: pricing.loyalty_discount,
         total: pricing.total,
         coupon_id: pricing.coupon_id,
         coupon_code: pricing.coupon_code,
@@ -103,7 +105,6 @@ export async function POST(request: Request) {
         customer_phone: data.customer_phone,
         delivery_address: data.delivery_address,
         delivery_notes: data.delivery_notes ?? null,
-        loyalty_points_earned: pricing.loyalty_points_earned,
         idempotency_key: idempotencyKey,
       })
       .select()
@@ -160,46 +161,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (user && pricing.loyalty_points_used > 0) {
-      const { data: profileBefore } = await admin
-        .from("profiles")
-        .select("loyalty_points")
-        .eq("id", user.id)
-        .single();
 
-      if (!profileBefore) {
-        await admin.from("order_items").delete().eq("order_id", order.id);
-        await admin.from("orders").delete().eq("id", order.id);
-        return NextResponse.json({ error: "Profile not found" }, { status: 400 });
-      }
-
-      const { data: updatedProfile, error: loyaltyError } = await admin
-        .from("profiles")
-        .update({
-          loyalty_points:
-            profileBefore.loyalty_points - pricing.loyalty_points_used,
-        })
-        .eq("id", user.id)
-        .gte("loyalty_points", pricing.loyalty_points_used)
-        .select("loyalty_points")
-        .single();
-
-      if (loyaltyError || !updatedProfile) {
-        await admin.from("order_items").delete().eq("order_id", order.id);
-        await admin.from("orders").delete().eq("id", order.id);
-        return NextResponse.json(
-          { error: "Insufficient loyalty points" },
-          { status: 400 }
-        );
-      }
-
-      await admin.from("loyalty_points").insert({
-        user_id: user.id,
-        order_id: order.id,
-        points: -pricing.loyalty_points_used,
-        description: `Redeemed for order #${order.order_number}`,
-      });
-    }
 
     let razorpayOrderId: string | null = null;
 

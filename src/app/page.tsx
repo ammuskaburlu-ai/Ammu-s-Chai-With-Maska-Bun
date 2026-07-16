@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { CustomerGallery } from "@/components/marketing/customer-gallery";
 import { VideoTestimonialsSection } from "@/components/marketing/video-testimonials-section";
 import { WhyPeopleLoveUs } from "@/components/marketing/why-people-love-us";
 import { InstagramCta } from "@/components/marketing/instagram-cta";
+import { FaqSection } from "@/components/marketing/faq-section";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { LocalBusinessSchema } from "@/components/marketing/local-business-schema";
 import { createClient } from "@/lib/supabase/server";
@@ -68,7 +70,7 @@ export default async function HomePage() {
   const hero = settings.heroBanner || {
     title: "Order Your Favorite Food",
     subtitle: "Fresh, fast & delivered to your door",
-    image: "/images/hero.jpg",
+    image: "",
   };
 
   const featuredTitles = getSectionTitles(sections, "featured_by", {
@@ -91,14 +93,51 @@ export default async function HomePage() {
     title: "Why People Love Us",
     subtitle: "Everything that makes Ammu's a local favourite",
   });
+  const categoryTitles = getSectionTitles(sections, "categories", {
+    title: "Categories",
+    subtitle: "Browse by what you're craving",
+  });
+  const specialTitles = getSectionTitles(sections, "todays_special", {
+    title: "Today's Special",
+    subtitle: "",
+  });
+  const bestSellerTitles = getSectionTitles(sections, "best_sellers", {
+    title: "Best Sellers",
+    subtitle: "Our most-loved chai, maska bun, and snack favourites",
+  });
+  const recommendedTitles = getSectionTitles(sections, "recommended", {
+    title: "Recommended For You",
+    subtitle: "",
+  });
+  const offersTitles = getSectionTitles(sections, "offers", {
+    title: "Offers & Coupons",
+    subtitle: "",
+  });
+  const reviewTitles = getSectionTitles(sections, "customer_reviews", {
+    title: "What Our Customers Say",
+    subtitle: "",
+  });
+  const faqTitles = getSectionTitles(sections, "faqs", {
+    title: "Frequently Asked Questions",
+    subtitle: "Everything you need to know",
+  });
 
   return (
     <>
       <LocalBusinessSchema settings={settings} />
       <div>
         {isHomepageSectionEnabled(sections, "hero") && (
-          <section className="relative bg-gradient-to-br from-brand/10 via-background to-brand/5 py-16 md:py-24">
-            <div className="container mx-auto px-4">
+          <section className="relative bg-gradient-to-br from-brand/10 via-background to-brand/5 py-16 md:py-24 overflow-hidden">
+            {hero.image && (
+              <Image 
+                src={hero.image} 
+                alt="Hero background" 
+                fill 
+                className="object-cover absolute inset-0 opacity-10 pointer-events-none"
+                priority
+              />
+            )}
+            <div className="container mx-auto px-4 relative z-10">
               <div className="max-w-2xl">
                 <Badge variant="brand" className="mb-4">Fast Delivery</Badge>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
@@ -128,7 +167,7 @@ export default async function HomePage() {
         {isHomepageSectionEnabled(sections, "categories") && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-              <SectionHeader title="Categories" subtitle="Browse by what you're craving" />
+              <SectionHeader title={categoryTitles.title} subtitle={categoryTitles.subtitle} />
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {(categories as Category[] || []).map((cat) => (
                   <Link
@@ -159,7 +198,8 @@ export default async function HomePage() {
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
               <SectionHeader
-                title="Today's Special"
+                title={specialTitles.title}
+                subtitle={specialTitles.subtitle}
                 action={
                   <Button variant="ghost" asChild>
                     <Link href="/menu?filter=special">View All</Link>
@@ -175,8 +215,8 @@ export default async function HomePage() {
           <section className="py-12 md:py-16 bg-muted/30">
             <div className="container mx-auto px-4">
               <SectionHeader
-                title="Best Sellers"
-                subtitle="Our most-loved chai, maska bun, and snack favourites"
+                title={bestSellerTitles.title}
+                subtitle={bestSellerTitles.subtitle}
                 action={
                   <Button variant="ghost" asChild>
                     <Link href="/menu?sort=popular">View All</Link>
@@ -200,7 +240,7 @@ export default async function HomePage() {
         {isHomepageSectionEnabled(sections, "recommended") && (featuredItems as Product[] || []).length > 0 && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-              <SectionHeader title="Recommended For You" />
+              <SectionHeader title={recommendedTitles.title} subtitle={recommendedTitles.subtitle} />
               <ProductGrid products={featuredItems as Product[]} />
             </div>
           </section>
@@ -233,7 +273,7 @@ export default async function HomePage() {
         {isHomepageSectionEnabled(sections, "offers") && (coupons || []).length > 0 && (
           <section className="py-12 md:py-16 bg-muted/30">
             <div className="container mx-auto px-4">
-              <SectionHeader title="Offers & Coupons" />
+              <SectionHeader title={offersTitles.title} subtitle={offersTitles.subtitle} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(coupons || []).map((coupon) => (
                   <article key={coupon.id} className="rounded-xl border-2 border-dashed border-brand/50 p-6 bg-brand/5">
@@ -259,7 +299,7 @@ export default async function HomePage() {
         {isHomepageSectionEnabled(sections, "customer_reviews") && (reviews as (Review & { profile?: { full_name: string | null } })[] || []).length > 0 && (
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-              <SectionHeader title="What Our Customers Say" />
+              <SectionHeader title={reviewTitles.title} subtitle={reviewTitles.subtitle} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(reviews || []).map((review) => (
                   <article key={review.id} className="rounded-xl border bg-card p-6">
@@ -277,6 +317,14 @@ export default async function HomePage() {
               </div>
             </div>
           </section>
+        )}
+
+        {isHomepageSectionEnabled(sections, "faqs") && (
+          <FaqSection 
+            faqs={marketing.faqs}
+            title={faqTitles.title}
+            subtitle={faqTitles.subtitle}
+          />
         )}
       </div>
     </>

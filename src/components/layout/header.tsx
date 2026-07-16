@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Menu, Search, Heart } from "lucide-react";
+import { ShoppingCart, User, Menu, Search, Heart, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useCartStore } from "@/store/cart";
 import { cn } from "@/lib/utils";
-import { APP_NAME } from "@/lib/constants";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -20,9 +19,11 @@ const navLinks = [
 
 interface HeaderProps {
   user?: { email: string; full_name?: string | null } | null;
+  businessName: string;
+  isStoreOpen: boolean;
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, businessName, isStoreOpen }: HeaderProps) {
   const pathname = usePathname();
   const itemCount = useCartStore((s) => s.getItemCount());
   const [mounted, setMounted] = useState(false);
@@ -36,9 +37,16 @@ export function Header({ user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-brand">{APP_NAME}</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-brand">{businessName}</span>
+          </Link>
+          {!isStoreOpen && (
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
+              <Store className="h-3 w-3" /> Closed
+            </span>
+          )}
+        </div>
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (

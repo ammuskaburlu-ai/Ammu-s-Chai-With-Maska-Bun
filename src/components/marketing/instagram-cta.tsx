@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/marketing/placeholder-data";
 
 interface InstagramCtaProps {
   instagramHandle?: string;
@@ -9,9 +8,27 @@ interface InstagramCtaProps {
 }
 
 export function InstagramCta({
-  instagramHandle = INSTAGRAM_HANDLE,
-  instagramUrl = INSTAGRAM_URL,
+  instagramHandle,
+  instagramUrl,
 }: InstagramCtaProps) {
+  if (!instagramHandle || !instagramUrl) {
+    return (
+      <section className="py-16 md:py-20 bg-gradient-to-br from-muted/50 via-background to-muted/30 border-y border-dashed">
+        <div className="container mx-auto px-4 text-center max-w-2xl">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground mb-6">
+            <Instagram className="h-7 w-7" />
+          </div>
+          <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4 text-muted-foreground">
+            Instagram Highlights
+          </h2>
+          <p className="text-muted-foreground">
+            Configure your Instagram handle and URL in the Marketing CMS to display your social CTA here.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 md:py-20 bg-gradient-to-br from-brand/15 via-background to-brand/5">
       <div className="container mx-auto px-4 text-center max-w-2xl">

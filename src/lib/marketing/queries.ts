@@ -2,8 +2,6 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   GOOGLE_REVIEWS_URL,
-  INSTAGRAM_HANDLE,
-  INSTAGRAM_URL,
   PLACEHOLDER_ANNOUNCEMENTS,
   PLACEHOLDER_FAQS,
   PLACEHOLDER_GALLERY,
@@ -85,6 +83,7 @@ export const getMarketingContent = cache(async (): Promise<MarketingContent> => 
     homepageSections,
     socialLinks,
     themeRow,
+    contactRow,
   ] = await Promise.all([
     safeQuery(
       async () =>
@@ -202,11 +201,22 @@ export const getMarketingContent = cache(async (): Promise<MarketingContent> => 
       []
     ),
     supabase.from("settings").select("value").eq("key", "marketing_theme").maybeSingle(),
+    supabase.from("settings").select("value").eq("key", "contact").maybeSingle(),
   ]);
 
   const social = socialLinks as MarketingSocialLink[];
-  const instagram = social.find((s) => s.platform === "instagram");
   const googleSocial = social.find((s) => s.platform === "google_reviews");
+
+  let contactSettings: Record<string, string> = {};
+  try {
+    if (contactRow.data?.value) {
+      contactSettings = typeof contactRow.data.value === "string" 
+        ? JSON.parse(contactRow.data.value) 
+        : contactRow.data.value;
+    }
+  } catch {
+    // Ignore parse errors
+  }
 
   return {
     trustBadges: trustBadges as MarketingTrustBadge[],
@@ -224,8 +234,8 @@ export const getMarketingContent = cache(async (): Promise<MarketingContent> => 
     socialLinks: social,
     theme: parseTheme(themeRow.data?.value),
     googleReviewsUrl: googleSocial?.url || GOOGLE_REVIEWS_URL,
-    instagramHandle: instagram?.handle || INSTAGRAM_HANDLE,
-    instagramUrl: instagram?.url || INSTAGRAM_URL,
+    instagramHandle: "",
+    instagramUrl: contactSettings?.instagram || "",
   };
 });
 

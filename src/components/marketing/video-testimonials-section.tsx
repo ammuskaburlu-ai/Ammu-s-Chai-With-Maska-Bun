@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Play } from "lucide-react";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { PLACEHOLDER_VIDEO_TESTIMONIALS } from "@/lib/marketing/placeholder-data";
@@ -29,10 +30,11 @@ export function VideoTestimonialsSection({
             >
               <div className="relative aspect-video bg-gradient-to-br from-brand/25 via-muted to-brand/10 flex items-center justify-center">
                 {video.thumbnailUrl ? (
-                  <img
+                  <Image
                     src={video.thumbnailUrl}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : null}
                 <div className="relative h-14 w-14 rounded-full bg-background/90 flex items-center justify-center shadow-md">
